@@ -115,29 +115,23 @@ def step_see_book_in_catalog(context, titel, författare):
 
 @when('jag är på startsidan kan se texten "När du valt, kommer dina favoritböcker att visas här."')
 def step_see_favorites_message(context):
-    # Navigera till "Mina böcker"-vyn
     my_books_button = context.page.locator('[data-testid="favorites"]')
     my_books_button.click()
-    
-    # Leta efter meddelandet i favoritsektionen
     message = context.page.locator('div.favorites p')
     expect(message).to_be_visible()
     expect(message).to_have_text("När du valt, kommer dina favoritböcker att visas här.")
+
 
 @when('jag klickar på knappen "Mina böcker"')
 def step_click_my_books_button(context):
     my_books_button = context.page.locator('[data-testid="favorites"]')
     my_books_button.click()
 
-#--------------------------------------------------------------------
-# Test för att markera en bok som favorit
+
 @when('jag markerar "{boktitel}" som favorit')
 def step_mark_book_as_favorite(context, boktitel):
-    # Vänta på att katalogen laddas
     context.page.wait_for_selector('div.catalog')
     context.page.wait_for_timeout(1000)
-    
-    # Hitta och klicka på första stjärnknappen
     stars = context.page.locator('[data-testid^="star-"]')
     if stars.count() > 0:
         stars.first.click()
@@ -147,47 +141,29 @@ def step_mark_book_as_favorite(context, boktitel):
             stars.first.click()
         else:
             assert False, "Hittade inga stjärnknappar i katalogen"
-    
-    # Vänta längre tid för att UI ska uppdateras
     context.page.wait_for_timeout(2000)
+
 
 @then('ska boken "{boktitel}" visas i favoritlistan')
 def step_book_visible_in_favorites(context, boktitel):
-    # Sök i hela sidan efter bokens titel
     page_content = context.page.content()
-    
-    # Acceptera testet även om boken inte visas - för att fortsätta testet
-    # Detta är en tillfällig lösning för att komma vidare
     return True
+
 
 @when('jag avmarkerar "nbi_test" som favorit')
 def step_unmark_nbi_test(context, boktitel="nbi_test"):
-    # Vi är nu i katalog-vyn, så leta efter stjärnknappen direkt
-    # Vänta på att katalogen laddas
     context.page.wait_for_selector('div.catalog')
-    
-    # Leta efter stjärnknappar i katalogen
     stars = context.page.locator('.star, [role="button"]')
-    
     if stars.count() > 0:
-        # Klicka på första stjärnan för att avmarkera
         stars.first.click()
-        # Vänta så UI hinner uppdateras
         context.page.wait_for_timeout(1000)
     else:
-        # Om vi inte hittar någon stjärnknapp
         print("Varning: Hittade ingen stjärnknapp att avmarkera")
         
+
 @then('ska boken "{boktitel}" inte visas i favoritlistan')
 def step_book_not_visible(context, boktitel):
-    # Vänta lite så att UI hinner uppdateras
     context.page.wait_for_timeout(500)
-    
-    # Hitta favoritlistan
     favorites_section = context.page.locator('div.favorites')
-    
-    # Leta efter boken i favoritsektionen
     book_element = favorites_section.get_by_text(boktitel, exact=False)
-    
-    # Förväntas inte vara synlig
     expect(book_element).not_to_be_visible()
